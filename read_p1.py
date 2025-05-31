@@ -143,8 +143,8 @@ class P1Reader():
                                 output.append(r)
                                 if DEBUG:
                                     self.logger.debug(f"desc:{r[0]}, val:{r[1]}, u:{r[2]}")
-
-                        self.logger.info(tabulate(output, headers=['Description', 'Value', 'Unit'], tablefmt='github'))
+                        if DEBUG:
+                            self.logger.info(tabulate(output, headers=['Description', 'Value', 'Unit'], tablefmt='github'))
                         break
 
             except:
@@ -155,6 +155,7 @@ class P1Reader():
 
         # flush the buffer
         ser.flush()
+        self.logger.info(readings)
         return readings
 
 if __name__ == '__main__':
