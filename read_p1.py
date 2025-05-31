@@ -108,48 +108,50 @@ class P1Reader():
         ser = serial.Serial(SERIALPORT, 115200, xonxoff=1)
         p1telegram = bytearray()
         readings = {}
-
-        try:
-            # read input from serial port
-            p1line = ser.readline()
-            if DEBUG:
-                self.logger.debug("Reading: %s", p1line.strip())
-            # P1 telegram starts with /
-            # We need to create a new empty telegram
-            if "/" in p1line.decode('ascii'):
+        while True:
+            try:
+                # read input from serial port
+                p1line = ser.readline()
                 if DEBUG:
-                    self.logger.debug("Found beginning of P1 telegram")
-                p1telegram = bytearray()
-                self.logger.info('*' * 60 + "\n")
-            # add line to complete telegram
-            p1telegram.extend(p1line)
-            # P1 telegram ends with ! + CRC16 checksum
-            if "!" in p1line.decode('ascii'):
-                if DEBUG:
-                    self.logger.debug("Found end, self.logger.debuging full telegram")
-                    self.logger.debug('*' * 40)
-                    self.logger.debug(p1telegram.decode('ascii').strip())
-                    self.logger.debug('*' * 40)
-                if self.checkcrc(p1telegram):
-                    # parse telegram contents, line by line
-                    output = []
-                    for line in p1telegram.split(b'\r\n'):
-                        r = self.parsetelegramline(line.decode('ascii'))
-                        if r:
-                            name, value, unit = r
-                            key = name.replace(' ', '_').lower()
+                    self.logger.debug("Reading: %s", p1line.strip())
+                # P1 telegram starts with /
+                # We need to create a new empty telegram
+                if "/" in p1line.decode('ascii'):
+                    if DEBUG:
+                        self.logger.debug("Found beginning of P1 telegram")
+                    p1telegram = bytearray()
+                    self.logger.info('*' * 60 + "\n")
+                # add line to complete telegram
+                p1telegram.extend(p1line)
+                # P1 telegram ends with ! + CRC16 checksum
+                if "!" in p1line.decode('ascii'):
+                    if DEBUG:
+                        self.logger.debug("Found end, self.logger.debuging full telegram")
+                        self.logger.debug('*' * 40)
+                        self.logger.debug(p1telegram.decode('ascii').strip())
+                        self.logger.debug('*' * 40)
+                    if self.checkcrc(p1telegram):
+                        # parse telegram contents, line by line
+                        output = []
+                        for line in p1telegram.split(b'\r\n'):
+                            r = self.parsetelegramline(line.decode('ascii'))
+                            if r:
+                                name, value, unit = r
+                                key = name.replace(' ', '_').lower()
 
-                            readings[key] = dict(value=r[1], unit=r[2], device_class=r[3], state_class="total_increasing", name=r[0])
-                            output.append(r)
-                            if DEBUG:
-                                self.logger.debug(f"desc:{r[0]}, val:{r[1]}, u:{r[2]}")
+                                readings[key] = dict(value=r[1], unit=r[2], device_class=r[3], state_class="total_increasing", name=r[0])
+                                output.append(r)
+                                if DEBUG:
+                                    self.logger.debug(f"desc:{r[0]}, val:{r[1]}, u:{r[2]}")
 
-                    self.logger.info(tabulate(output, headers=['Description', 'Value', 'Unit'], tablefmt='github'))
+                        self.logger.info(tabulate(output, headers=['Description', 'Value', 'Unit'], tablefmt='github'))
+                        break
 
-        except:
-            # self.logger.info(traceback.format_exc())
-            self.logger.exception("Something went wrong...")
-            ser.close()
+            except:
+                # self.logger.info(traceback.format_exc())
+                self.logger.exception("Something went wrong...")
+                ser.close()
+                break
 
         # flush the buffer
         ser.flush()
