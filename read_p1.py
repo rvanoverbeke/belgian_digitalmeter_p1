@@ -29,10 +29,10 @@ class P1Reader():
 
     def add_logger(self):
         logger = logging.getLogger(__name__)
-        logger.setLevel(self.logger.debug)
+        logger.setLevel(logging.debug)
 
         handler = logging.StreamHandler(sys.stdout)
-        handler.setLevel(self.logger.debug)
+        handler.setLevel(logging.debug)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
