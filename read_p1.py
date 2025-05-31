@@ -17,7 +17,7 @@ from tabulate import tabulate
 SERIALPORT = '/dev/ttyUSB0'
 
 # Enable DEBUG if needed:
-DEBUG = False
+DEBUG = True
 
 class P1Reader():
 
@@ -113,7 +113,7 @@ class P1Reader():
             # read input from serial port
             p1line = ser.readline()
             if DEBUG:
-                self.logger.debug("Reading: ", p1line.strip())
+                self.logger.debug("Reading: %s", p1line.strip())
             # P1 telegram starts with /
             # We need to create a new empty telegram
             if "/" in p1line.decode('ascii'):
