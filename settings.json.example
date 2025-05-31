@@ -1,0 +1,8 @@
+{
+    "mqtt_broker": "",
+    "mqtt_port": 1883,
+    "mqtt_username": "your_username",
+    "mqtt_password": "your_password",
+    "mqtt_client_id": "meter_publisher",
+    "mqtt_discovery_prefix": "homeassistant"
+}

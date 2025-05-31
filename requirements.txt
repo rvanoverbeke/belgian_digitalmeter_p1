@@ -1,3 +1,4 @@
-pyserial
-crcmod
-tabulate
+crcmod==1.7
+paho-mqtt==2.1.0
+pyserial==3.5
+tabulate==0.9.0
