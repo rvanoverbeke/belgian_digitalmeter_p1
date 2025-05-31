@@ -8,6 +8,7 @@
 import json
 import logging
 import serial
+import sys
 import crcmod.predefined
 import re
 from tabulate import tabulate
@@ -21,7 +22,7 @@ DEBUG = False
 class P1Reader():
 
     def __init__(self, logger=None):
-        if logger is None:
+        if not logger:
             logger = self.add_logger()
         self.logger = logger
         self.obiscodes = self.read_obis()
@@ -112,12 +113,12 @@ class P1Reader():
             # read input from serial port
             p1line = ser.readline()
             if DEBUG:
-                self.logger.debug ("Reading: ", p1line.strip())
+                self.logger.debug("Reading: ", p1line.strip())
             # P1 telegram starts with /
             # We need to create a new empty telegram
             if "/" in p1line.decode('ascii'):
                 if DEBUG:
-                    self.logger.debug ("Found beginning of P1 telegram")
+                    self.logger.debug("Found beginning of P1 telegram")
                 p1telegram = bytearray()
                 self.logger.info('*' * 60 + "\n")
             # add line to complete telegram
@@ -144,13 +145,15 @@ class P1Reader():
                                 self.logger.debug(f"desc:{r[0]}, val:{r[1]}, u:{r[2]}")
 
                     self.logger.info(tabulate(output, headers=['Description', 'Value', 'Unit'], tablefmt='github'))
-                    return readings
+
         except:
             # self.logger.info(traceback.format_exc())
             self.logger.exception("Something went wrong...")
             ser.close()
+
         # flush the buffer
         ser.flush()
+        return readings
 
 if __name__ == '__main__':
     p1 = P1Reader()
