@@ -1,4 +1,5 @@
 import paho.mqtt.client as mqtt
+import sys
 import time
 import json
 import logging
@@ -8,7 +9,7 @@ from read_p1 import P1Reader
 class MQTTDevice:
 
     def __init__(self):
-        self.logger = logging.Logger(__name__)
+        self.logger = self.add_logger()
         settings = self.read_settings()
         self.mqtt_broker = settings.get('mqtt_broker')
         self.mqtt_port = settings.get('mqtt_port')
@@ -19,7 +20,18 @@ class MQTTDevice:
 
         self.client = self.connect_mqtt()
 
-        self.p1_reader = P1Reader()
+        self.p1_reader = P1Reader(self.logger)
+
+    def add_logger(self):
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        return logger
 
     def read_settings(self):
         with open('settings.json', 'r') as fh:
@@ -31,14 +43,15 @@ class MQTTDevice:
     def connect_mqtt(self):
         def on_connect(client, userdata, flags, rc, properties):
             if rc == 0:
-                self.logger("Connected to MQTT Broker!")
+                self.logger.info("Connected to MQTT Broker!")
             else:
-                self.logger("Failed to connect, return code %d\n", rc)
+                self.logger.info("Failed to connect, return code %d\n", rc)
 
         client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id=self.mqtt_client_id)
         client.username_pw_set(self.mqtt_username, self.mqtt_password)
         client.on_connect = on_connect
         client.connect(self.mqtt_broker, self.mqtt_port, 60)
+        return client
 
     def publish_readings(self):
         readings = self.get_readings()
@@ -65,11 +78,11 @@ class MQTTDevice:
             }
 
             self.client.publish(discovery_topic, json.dumps(payload), qos=1, retain=True)
-            self.logger(f"[DISCOVERY] Published config to {discovery_topic}")
+            self.logger.info(f"[DISCOVERY] Published config to {discovery_topic}")
 
             # Publish actual state
             self.client.publish(state_topic, data["value"], qos=1, retain=True)
-            self.logger(f"[STATE] Published {data['value']} to {state_topic}")
+            self.logger.info(f"[STATE] Published {data['value']} to {state_topic}")
 
         # Set availability
         self.client.publish(f"{self.mqtt_client_id}/status", "online", qos=1, retain=True)
@@ -86,7 +99,7 @@ class MQTTDevice:
 
     def run(self):
         self.client.loop_start()
-        self.publish_loop
+        self.publish_loop()
         self.client.loop_stop()
 
 if __name__ == "__main__":

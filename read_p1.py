@@ -20,8 +20,22 @@ DEBUG = False
 
 class P1Reader():
 
-    def __init__(self):
+    def __init__(self, logger=None):
+        if logger is None:
+            logger = self.add_logger()
+        self.logger = logger
         self.obiscodes = self.read_obis()
+
+    def add_logger(self):
+        logger = logging.getLogger(__name__)
+        logger.setLevel(self.logger.debug)
+
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(self.logger.debug)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        return logger
 
     def read_obis(self):
         with open('obiscodes.json', 'r') as fh:
@@ -38,10 +52,10 @@ class P1Reader():
         calccrc = hex(crcmod.predefined.mkPredefinedCrcFun('crc16')(p1contents))
         # check if given and calculated match
         if DEBUG:
-            logging.debug(f"Given checksum: {givencrc}, Calculated checksum: {calccrc}")
+            self.logger.debug(f"Given checksum: {givencrc}, Calculated checksum: {calccrc}")
         if givencrc != calccrc:
             if DEBUG:
-                logging.debug("Checksum incorrect, skipping...")
+                self.logger.debug("Checksum incorrect, skipping...")
             return False
         return True
 
@@ -51,11 +65,11 @@ class P1Reader():
         unit = ""
         timestamp = ""
         if DEBUG:
-            logging.debug(f"Parsing:{p1line}")
+            self.logger.debug(f"Parsing:{p1line}")
         # get OBIS code from line (format:OBIS(value)
         obis = p1line.split("(")[0]
         if DEBUG:
-            logging.debug(f"OBIS:{obis}")
+            self.logger.debug(f"OBIS:{obis}")
         # check if OBIS code is something we know and parse it
         if obis in self.obiscodes:
             description, device_class = self.obiscodes[obis].values()
@@ -81,7 +95,7 @@ class P1Reader():
                     unit = lvalue[1]
             # return result in tuple: description,value,unit,timestamp
             if DEBUG:
-                logging.debug (f"description:{description}, \
+                self.logger.debug (f"description:{description}, \
                         value:{value}, \
                         unit:{unit}")
             return (description, value, unit, device_class)
@@ -98,23 +112,23 @@ class P1Reader():
             # read input from serial port
             p1line = ser.readline()
             if DEBUG:
-                logging.debug ("Reading: ", p1line.strip())
+                self.logger.debug ("Reading: ", p1line.strip())
             # P1 telegram starts with /
             # We need to create a new empty telegram
             if "/" in p1line.decode('ascii'):
                 if DEBUG:
-                    logging.debug ("Found beginning of P1 telegram")
+                    self.logger.debug ("Found beginning of P1 telegram")
                 p1telegram = bytearray()
-                logging.info('*' * 60 + "\n")
+                self.logger.info('*' * 60 + "\n")
             # add line to complete telegram
             p1telegram.extend(p1line)
             # P1 telegram ends with ! + CRC16 checksum
             if "!" in p1line.decode('ascii'):
                 if DEBUG:
-                    logging.debug("Found end, logging.debuging full telegram")
-                    logging.debug('*' * 40)
-                    logging.debug(p1telegram.decode('ascii').strip())
-                    logging.debug('*' * 40)
+                    self.logger.debug("Found end, self.logger.debuging full telegram")
+                    self.logger.debug('*' * 40)
+                    self.logger.debug(p1telegram.decode('ascii').strip())
+                    self.logger.debug('*' * 40)
                 if self.checkcrc(p1telegram):
                     # parse telegram contents, line by line
                     output = []
@@ -127,13 +141,13 @@ class P1Reader():
                             readings[key] = dict(value=r[1], unit=r[2], device_class=r[3], state_class="total_increasing", name=r[0])
                             output.append(r)
                             if DEBUG:
-                                logging.debug(f"desc:{r[0]}, val:{r[1]}, u:{r[2]}")
+                                self.logger.debug(f"desc:{r[0]}, val:{r[1]}, u:{r[2]}")
 
-                    logging.info(tabulate(output, headers=['Description', 'Value', 'Unit'], tablefmt='github'))
+                    self.logger.info(tabulate(output, headers=['Description', 'Value', 'Unit'], tablefmt='github'))
                     return readings
         except:
-            # logging.info(traceback.format_exc())
-            logging.exception("Something went wrong...")
+            # self.logger.info(traceback.format_exc())
+            self.logger.exception("Something went wrong...")
             ser.close()
         # flush the buffer
         ser.flush()
