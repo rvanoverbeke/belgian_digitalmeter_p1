@@ -35,7 +35,7 @@ class MQTTDevice:
             else:
                 self.logger("Failed to connect, return code %d\n", rc)
 
-        client = mqtt.Client(self.mqtt_client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
+        client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id=self.mqtt_client_id)
         client.username_pw_set(self.mqtt_username, self.mqtt_password)
         client.on_connect = on_connect
         client.connect(self.mqtt_broker, self.mqtt_port, 60)
