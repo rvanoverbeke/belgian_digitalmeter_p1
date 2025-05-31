@@ -90,8 +90,8 @@ class MQTTDevice:
 
     def publish_loop(self):
         while True:
-            time.sleep(300)
             self.publish_readings()
+            time.sleep(300)
 
     def run(self):
         self.client.loop_start()

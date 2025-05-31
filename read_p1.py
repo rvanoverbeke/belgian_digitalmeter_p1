@@ -17,7 +17,7 @@ from tabulate import tabulate
 SERIALPORT = '/dev/ttyUSB0'
 
 # Enable DEBUG if needed:
-DEBUG = True
+DEBUG = False
 
 class P1Reader():
 
