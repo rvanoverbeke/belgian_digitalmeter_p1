@@ -73,7 +73,9 @@ class P1Reader():
             self.logger.debug(f"OBIS:{obis}")
         # check if OBIS code is something we know and parse it
         if obis in self.obiscodes:
-            description, device_class = self.obiscodes[obis].values()
+            description = self.obiscodes[obis].get('name')
+            device_class = self.obiscodes[obis].get('device_class')
+            unit = self.obiscodes[obis].get('unit')
             # get values from line.
             # format:OBIS(value), gas: OBIS(timestamp)(value)
             values = re.findall(r'\(.*?\)', p1line)
@@ -92,7 +94,7 @@ class P1Reader():
                 # separate value and unit (format:value*unit)
                 lvalue = value.split("*")
                 value = float(lvalue[0])
-                if len(lvalue) > 1:
+                if len(lvalue) > 1 and not unit:
                     unit = lvalue[1]
             # return result in tuple: description,value,unit,timestamp
             if DEBUG:
