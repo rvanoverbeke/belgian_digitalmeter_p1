@@ -136,10 +136,10 @@ class P1Reader():
                         for line in p1telegram.split(b'\r\n'):
                             r = self.parsetelegramline(line.decode('ascii'))
                             if r:
-                                name, value, unit = r
+                                name, value, unit, device_class = r
                                 key = name.replace(' ', '_').lower()
 
-                                readings[key] = dict(value=r[1], unit=r[2], device_class=r[3], state_class="total_increasing", name=r[0])
+                                readings[key] = dict(value=value, unit=unit, device_class=device_class, state_class="total_increasing", name=name)
                                 output.append(r)
                                 if DEBUG:
                                     self.logger.debug(f"desc:{r[0]}, val:{r[1]}, u:{r[2]}")
