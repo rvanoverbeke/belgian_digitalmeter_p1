@@ -63,7 +63,7 @@ class P1Reader():
 
     def parsetelegramline(self, p1line):
         # parse a single line of the telegram and try to get relevant data from it
-        unit = ""
+        unit = None
         timestamp = ""
         if DEBUG:
             self.logger.debug(f"Parsing:{p1line}")

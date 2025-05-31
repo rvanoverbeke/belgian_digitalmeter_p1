@@ -86,21 +86,18 @@ class MQTTDevice:
 
         # Set availability
         self.client.publish(f"{self.mqtt_client_id}/status", "online", qos=1, retain=True)
-        self.client.disconnect()
+        self.logger.info(f"[Availability] Published 'online' to {self.mqtt_client_id}/status")
 
     def publish_loop(self):
-        msg_count = 1
         while True:
-            time.sleep(10)
+            time.sleep(300)
             self.publish_readings()
-            msg_count += 1
-            if msg_count > 5:
-                break
 
     def run(self):
         self.client.loop_start()
         self.publish_loop()
         self.client.loop_stop()
+        self.client.disconnect()
 
 if __name__ == "__main__":
     mqtt_device = MQTTDevice()
