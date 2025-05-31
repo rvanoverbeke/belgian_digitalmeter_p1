@@ -25,6 +25,7 @@ obiscodes = {
     "0-1:24.4.0": "Switch gas",
     "0-0:96.1.1": "Meter serial electricity",
     "0-1:96.1.1": "Meter serial gas",
+    "0-2:96.1.1": "Meter serial water",
     "0-0:96.14.0": "Current rate (1=day,2=night)",
     "1-0:1.8.1": "Rate 1 (day) - total consumption",
     "1-0:1.8.2": "Rate 2 (night) - total consumption",
@@ -44,7 +45,8 @@ obiscodes = {
     "1-0:31.7.0": "L1 current",
     "1-0:51.7.0": "L2 current",
     "1-0:71.7.0": "L3 current",
-    "0-1:24.2.3": "Gas consumption"
+    "0-1:24.2.3": "Gas consumption",
+    "0-2:24.2.1": "Water consumption"
     }
 
 
